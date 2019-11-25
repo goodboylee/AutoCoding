@@ -110,6 +110,18 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)writeToFile:(NSString *)filePath atomically:(BOOL)useAuxiliaryFile;
 
+/**
+ * lotus added 2019.11.25
+ * for sub class to override, returns YES if subclasses do the encode/decode else return NO
+ * if retunrs YES the auto encoding/decoding will do nothing aboute the key
+ * otherwise you should return NO to let the auto coding do the encoding/decoding
+ *
+ * for example: you should do encoding/decoding for structs yourself and return YES
+ * or any other encoding/decoding you wish to implement your customer method
+ */
+-(BOOL)encodeKey:(NSString *)key withCoder:(NSCoder *)aCoder;
+-(BOOL)decodeKey:(NSString *)key withCoder:(NSCoder *)aCoder;
+
 @end
 
 NS_ASSUME_NONNULL_END

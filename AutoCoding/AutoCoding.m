@@ -236,23 +236,26 @@ static NSString *const AutocodingException = @"AutocodingException";
     NSDictionary *properties = self.codableProperties;
     for (NSString *key in properties)
     {
-        id object = nil;
-        Class propertyClass = properties[key];
-        if (secureAvailable)
+        if(![self decodeKey:key withCoder:aDecoder])
         {
-            object = [aDecoder decodeObjectOfClass:propertyClass forKey:key];
-        }
-        else
-        {
-            object = [aDecoder decodeObjectForKey:key];
-        }
-        if (object)
-        {
-            if (secureSupported && ![object isKindOfClass:propertyClass] && object != [NSNull null])
+            id object = nil;
+            Class propertyClass = properties[key];
+            if (secureAvailable)
             {
-                [NSException raise:AutocodingException format:@"Expected '%@' to be a %@, but was actually a %@", key, propertyClass, [object class]];
+                object = [aDecoder decodeObjectOfClass:propertyClass forKey:key];
             }
-            [self setValue:object forKey:key];
+            else
+            {
+                object = [aDecoder decodeObjectForKey:key];
+            }
+            if (object)
+            {
+                if (secureSupported && ![object isKindOfClass:propertyClass] && object != [NSNull null])
+                {
+                    [NSException raise:AutocodingException format:@"Expected '%@' to be a %@, but was actually a %@", key, propertyClass, [object class]];
+                }
+                [self setValue:object forKey:key];
+            }
         }
     }
 }
@@ -267,9 +270,25 @@ static NSString *const AutocodingException = @"AutocodingException";
 {
     for (NSString *key in self.codableProperties)
     {
-        id object = [self valueForKey:key];
-        if (object) [aCoder encodeObject:object forKey:key];
+        if(![self encodeKey:key withCoder:aCoder])
+        {
+            id object = [self valueForKey:key];
+            if (object) [aCoder encodeObject:object forKey:key];
+        }
     }
+}
+
+//lotus added 2019.11.25
+-(BOOL)encodeKey:(NSString *)key withCoder:(NSCoder *)aCoder
+{
+    //for sub class to override, return YES if subclasses do the encode else return NO
+    return NO;
+}
+
+-(BOOL)decodeKey:(NSString *)key withCoder:(NSCoder *)aCoder
+{
+    //for sub class to override, return YES if subclasses do the decode else return NO
+    return NO;
 }
 
 @end
